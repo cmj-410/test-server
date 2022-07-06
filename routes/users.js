@@ -1,5 +1,6 @@
 const router = require('koa-router')()
 const jwt = require('jsonwebtoken')
+const md5 = require('md5')
 
 const User = require('../models/userSchema')
 const Counter = require('./../models/counterSchema')
@@ -127,12 +128,12 @@ router.post('/operate', async (ctx) => {
 
 // 用户删除/批量删除
 router.post('/delete', async (ctx) => {
-  // 待删除的用户Id数组
-  const { userIds } = ctx.request.body
-  const res = await User.updateMany({ userId: { $in: userIds } }, { state: 0 })
-  if (res.modifiedCount) {
-    ctx.body = responses.success(res, `共删除成功${res.modifiedCount}条用户信息`)
-    return;
+  // 待删除的用户Id或数组
+  const { userId } = ctx.request.body
+  const res = await User.deleteOne({ userId}) 
+  if (res.deletedCount) {
+    ctx.body = responses.success(res, `共删除成功${res.deletedCount}条用户信息`)
+    return
   }
   ctx.body = responses.fail('用户删除失败');
 })
