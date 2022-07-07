@@ -45,10 +45,10 @@ router.get('/profile', async ctx => {
     if (!userId){
       let authorization = ctx.request.headers.authorization
       let { data } = utils.decoded(authorization)
-      const res = await User.findOne({ userId: data.userId }, {__v: 0}) 
+      const res = await User.findOne({ userId: data.userId }, {__v: 0, password: 0}) 
       ctx.body = responses.success(res, '个人信息')
     } else {
-      const res = await User.findOne({ userId }, {__v: 0})
+      const res = await User.findOne({ userId }, {__v: 0, password: 0})
       ctx.body = responses.success(res, `用户${userId}的个人信息`)
     }
   } catch(err){
