@@ -138,4 +138,53 @@ router.post('/delete', async (ctx) => {
   ctx.body = responses.fail('用户删除失败');
 })
 
+// 批量增加用户
+router.post('/import-users', async ctx => {
+  const userList = ctx.request.body
+  let missDataIndexList = []
+  let sameDataIndexList = []
+  let index = 0
+  let success = 0
+  await Promise.all(userList.map(async userInfo => {
+    const { userName, mobile, role, state } = userInfo
+    if (!userName || !mobile){
+      missDataIndexList.push(index)
+    } else {
+      const res = await User.findOne({ $or: [{ userName }, { mobile }] })
+      if (res){
+        sameDataIndexList.push(index)
+      } else {
+        const doc = await Counter.findOneAndUpdate({}, { $inc: { sequence_value: 1 } }, { new: true })
+        try {
+          const user = new User({
+            userId: doc.sequence_value,
+            userName,
+            password: md5('123456'),
+            mobile,
+            role, 
+            state,
+          })
+          user.save()
+          success++
+        } catch (error) {
+        }
+      }
+    }
+    index++
+  } 
+  )) 
+  let errorResponse = ''
+  if (missDataIndexList.length > 0){
+    errorResponse += `批量新建用户-参数错误。出错序号列表：${JSON.stringify(missDataIndexList)}。 `
+  }
+  if (sameDataIndexList.length > 0){
+    errorResponse += `系统监测到有重复的用户。出错序号列表：${JSON.stringify(sameDataIndexList)}。 `
+  }
+  if (success != userList.length){
+    ctx.body = responses.fail(errorResponse + `通过批量导入，${success}个用户创建成功`)
+  } else {
+    ctx.body = responses.success('', `通过批量导入，${success}个用户创建成功`)
+  }
+})
+
 module.exports = router

@@ -4,7 +4,6 @@ const userSchema = mongoose.Schema({
   "userName": String,
   "password": String,
   "mobile": String,
-  "avatar": String,
   "state": {
     type: Number, // 1--正常，0--停用
     default: 1
