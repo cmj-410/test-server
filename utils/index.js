@@ -24,5 +24,5 @@ module.exports = {
         return jwt.verify(token, constants.TOKEN_SECRET)
     }
     return '';
-  },
+  }
 }

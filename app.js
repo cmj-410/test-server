@@ -8,6 +8,8 @@ const koajwt = require('koa-jwt')
 
 const index = require('./routes/index')
 const users = require('./routes/users')
+const roles = require('./routes/roles')
+const permissions = require('./routes/permission')
 
 const constants = require('./constants/index')
 const responses = require('./utils/responses')
@@ -47,6 +49,8 @@ router.prefix('/api')
 // routes
 router.use(index.routes(), index.allowedMethods())
 router.use(users.routes(), users.allowedMethods())
+router.use(roles.routes(), roles.allowedMethods())
+router.use(permissions.routes(), permissions.allowedMethods())
 app.use(router.routes(), router.allowedMethods())
 
 // error-handling

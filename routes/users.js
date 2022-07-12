@@ -64,7 +64,7 @@ router.get('/list', async ctx => {
   if (userName) params.userName = userName
   if (state) params.state = state
   try {
-    const query = User.find(params, {__v: 0})
+    const query = User.find(params, {__v: 0, password: 0})
     const list = await query.skip(skipIndex).limit(page.pageSize)
     const total = await User.countDocuments(params)
 
@@ -126,13 +126,13 @@ router.post('/operate', async (ctx) => {
   }
 })
 
-// 用户删除/批量删除
+// 用户删除
 router.post('/delete', async (ctx) => {
-  // 待删除的用户Id或数组
+  // 待删除的用户Id
   const { userId } = ctx.request.body
-  const res = await User.deleteOne({ userId}) 
+  const res = await User.deleteOne({ userId }) 
   if (res.deletedCount) {
-    ctx.body = responses.success(res, `共删除成功${res.deletedCount}条用户信息`)
+    ctx.body = responses.success('', `删除成功`)
     return
   }
   ctx.body = responses.fail('用户删除失败');
