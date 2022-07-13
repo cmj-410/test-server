@@ -9,6 +9,7 @@ router.prefix('/roles')
 
 // 新增和更新
 router.post('/operate', async (ctx) => {
+  // permission要求前端根据type放入menu和point的数组中
   const { roleId, roleCode, roleName, permission, action } = ctx.request.body
   if (action == 'add') {
     // 新增必须的字段
@@ -36,7 +37,7 @@ router.post('/operate', async (ctx) => {
     }
   } else {
     // 编辑必须的字段
-    if (!roleId) {
+    if (!roleId && !roleName) {
       ctx.body = responses.fail('编辑角色-参数错误', constants.PARAM_ERROR)
       return
     }
@@ -52,23 +53,14 @@ router.post('/operate', async (ctx) => {
 
 router.get('/list', async ctx => {
   try {
-    const list = await Role.find({}, { __v: 0 })
+    const list = await Role.find({}, { __v: 0, permission: 0 })
     ctx.body = responses.success(list, '角色列表')
   } catch (error) {
     ctx.body = responses.fail(`查询异常:${error.stack}`)
   }
 })
 
-// 角色详情信息
-router.get('/detail', async ctx => {
-  const { roleId } = ctx.request.query
-  try{
-    const res = await Role.findOne({ roleId }, {__v: 0})
-    ctx.body = responses.success(res, `角色${roleId}的详细信息`)
-  } catch(err){
-    ctx.body = responses.fail(err.stack)
-  }
-})
+// 角色的权限信息在permission路由中
 
 // 角色删除
 router.post('/delete', async (ctx) => {

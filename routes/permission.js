@@ -25,7 +25,7 @@ router.post('/operate', async (ctx) => {
           permissionName,
           permissionType,
           parent: parent ?? '',
-          state: state
+          state: state ?? 1
         })
         power.save()
         ctx.body = responses.success('', '权限创建成功')
@@ -48,52 +48,33 @@ router.post('/operate', async (ctx) => {
   }
 })
 
-router.get('/list', async ctx => {
+// 完整的权限列表
+router.get('/all-list', async ctx => {
   try {
     const originalData = await Power.find({}, {'_v': 0})
-    const temp = JSON.parse(JSON.stringify(originalData))
-  // const temp = Array.from(list)
-    const res = []
-    originalData.forEach(item => {
-      const node = JSON.parse(JSON.stringify(item))
-      if (item.parent){
-        temp.every(x => {
-          if(x.permissionCode == item.parent){
-            if(x.children){
-              x.children.push(node)
-            } else{
-              x.children = [ node ]
-            }
-            return false
-          }
-          return true
-        })
-      } else {
-        res.push(node)
-      }
-    })
-    // const powerList = exchange2MenuStructure(originalData)
-    ctx.body = responses.success(res,'菜单结构')
+    const powerList = exchange2MenuStructure(originalData)
+    ctx.body = responses.success(powerList,'菜单结构')
   } catch (error) {
     ctx.body = responses.fail(`菜单查询异常:${error.stack}`)
   }
 })
 
-// 角色详情信息
-router.get('/detail', async ctx => {
+// 角色的权限列表
+router.get('/roleList', async ctx => {
   const { roleId } = ctx.request.query
   try{
-    const res = await Role.findOne({ roleId }, {__v: 0})
-    ctx.body = responses.success(res, `角色${roleId}的详细信息`)
+    const roleInfo = await Role.findOne({ roleId }, {__v: 0})
+    const permissionList = exchange2MenuStructure(roleInfo.permission)
+    ctx.body = responses.success(permissionList, `角色${roleId}的权限树`)
   } catch(err){
     ctx.body = responses.fail(err.stack)
   }
 })
 
-// 角色删除
+// 权限删除
 router.post('/delete', async (ctx) => {
-  const { roleId } = ctx.request.body
-  const res = await Role.deleteOne({ roleId}) 
+  const { permissionCode } = ctx.request.body
+  const res = await Power.deleteOne({ roleId}) 
   if (res.deletedCount) {
     ctx.body = responses.success(res, `删除成功`)
     return

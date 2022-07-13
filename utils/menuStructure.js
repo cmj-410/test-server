@@ -3,24 +3,20 @@ module.exports = {
     const temp = JSON.parse(JSON.stringify(originalData))
     const res = []
     originalData.forEach(item => {
-        if (item.parent){
-          const node = temp.filter(x => x.permissionCode === item.permissionCode)
-          temp.every(x => {
-            if(x.permissionCode === item.parent){
-              if(x.children){
-                x.children.push(node)
-                console.log('2')
-              } else{
-                x.children = [ node ]
-              }
-              return false
+      let node = temp.filter(x => x.permissionCode === item.permissionCode)[0]
+      if (item.parent != ''){
+        temp.forEach(x => {
+          if(x.permissionCode == item.parent){
+            if(x.children){
+              x.children.push(node)
+            } else{
+              x.children = [ node ]
             }
-            console.log('1')
-            return true
-          })
-        } else {
-          res.push(temp.filter(x => x.permissionCode === item.permissionCode))
-        }
+          }
+        })
+      } else {
+        res.push(node)
+      }
     })
     return res
   }
