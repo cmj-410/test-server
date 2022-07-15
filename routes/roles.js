@@ -37,7 +37,7 @@ router.post('/operate', async (ctx) => {
     }
   } else {
     // 编辑必须的字段
-    if (!roleId && !roleName) {
+    if (!roleId) {
       ctx.body = responses.fail('编辑角色-参数错误', constants.PARAM_ERROR)
       return
     }
@@ -60,7 +60,17 @@ router.get('/list', async ctx => {
   }
 })
 
-// 角色的权限信息在permission路由中
+// 角色的权限列表
+router.get('/rolePermissionsList', async ctx => {
+  const { roleId } = ctx.request.query
+  try{
+    const roleInfo = await Role.findOne({ roleId }, {__v: 0})
+    const temp = roleInfo.permission
+    ctx.body = responses.success({permissionList: [...temp.menus, ...temp.points]}, `角色${roleId}的权限树`)
+  } catch(err){
+    ctx.body = responses.fail(err.stack)
+  }
+})
 
 // 角色删除
 router.post('/delete', async (ctx) => {

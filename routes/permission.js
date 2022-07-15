@@ -1,5 +1,6 @@
 const router = require('koa-router')()
 const Power = require('../models/powerSchema')
+const Role = require('../models/roleSchema')
 
 const constants = require('../constants/index')
 const responses = require('../utils/responses')
@@ -59,17 +60,6 @@ router.get('/all-list', async ctx => {
   }
 })
 
-// 角色的权限列表
-router.get('/roleList', async ctx => {
-  const { roleId } = ctx.request.query
-  try{
-    const roleInfo = await Role.findOne({ roleId }, {__v: 0})
-    const permissionList = exchange2MenuStructure(roleInfo.permission)
-    ctx.body = responses.success(permissionList, `角色${roleId}的权限树`)
-  } catch(err){
-    ctx.body = responses.fail(err.stack)
-  }
-})
 
 // 权限删除
 router.post('/delete', async (ctx) => {

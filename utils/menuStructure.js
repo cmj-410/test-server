@@ -1,5 +1,8 @@
 module.exports = {
   exchange2MenuStructure(originalData){
+    if (!Array.isArray(originalData)){
+      throw Error('传入的permission并非数组')
+    }
     const temp = JSON.parse(JSON.stringify(originalData))
     const res = []
     originalData.forEach(item => {

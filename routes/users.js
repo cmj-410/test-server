@@ -3,10 +3,12 @@ const jwt = require('jsonwebtoken')
 const md5 = require('md5')
 
 const User = require('../models/userSchema')
+const Role = require('../models/roleSchema')
 const Counter = require('./../models/counterSchema')
 
 const constants = require('../constants/index')
 const responses = require('../utils/responses')
+const { mergeRolesPermissions } = require('../utils/mergeMultiRole')
 const utils = require('../utils/index')
 router.prefix('/users')
 
@@ -42,11 +44,15 @@ router.post('/login', async (ctx, next) => {
 router.get('/profile', async ctx => {
   const { userId } = ctx.request.query
   try{
+    // 本人信息
     if (!userId){
       let authorization = ctx.request.headers.authorization
       let { data } = utils.decoded(authorization)
       const res = await User.findOne({ userId: data.userId }, {__v: 0, password: 0}) 
-      ctx.body = responses.success(res, '个人信息')
+      // 根据用户的角色返回权限
+      const rolesPermissions = await Role.find({roleCode: {$in: res.role}}, 'permission')      
+      const permission = await mergeRolesPermissions(rolesPermissions)
+      ctx.body = responses.success({...res._doc, permission}, '个人信息')
     } else {
       const res = await User.findOne({ userId }, {__v: 0, password: 0})
       ctx.body = responses.success(res, `用户${userId}的个人信息`)

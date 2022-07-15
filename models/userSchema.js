@@ -9,7 +9,6 @@ const userSchema = mongoose.Schema({
     default: 1
   },
   "role": [],
-  "permission": {"menus": [], "points": []},
   "createTime" : {
     type: Date,
     default: Date.now()
