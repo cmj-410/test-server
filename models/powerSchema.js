@@ -2,25 +2,24 @@
  * 权限
  */
 
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 const permissionSchema = mongoose.Schema({
-  "permissionCode": '',
-  "permissionName": '',
-  "permissionType": {
-    enum: ['menu', 'point']
+  permissionCode: "",
+  permissionName: "",
+  permissionType: {
+    type: String,
+    enum: ["menu", "point"],
   },
-  "parent": {
-    default: ''
-  },
-  "state": {
+  parent: "",
+  state: {
     type: Number,
     default: 1,
-    enum: [0, 1] // 0 停用，1正常
+    enum: [0, 1], // 0 停用，1正常
   },
-  "updateTime" : {
+  updateTime: {
     type: Date,
-    default: Date.now()
-  }//更新时间
-})
+    default: Date.now(),
+  }, //更新时间
+});
 
-module.exports = mongoose.model("Permission", permissionSchema)
+module.exports = mongoose.model("Permission", permissionSchema);
