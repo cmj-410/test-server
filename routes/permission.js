@@ -36,7 +36,7 @@ router.post("/add-permission", async (ctx) => {
       power.save();
       ctx.body = responses.success("", "权限创建成功");
     } catch (error) {
-      ctx.body = responses.fail(error.stack, "权限创建失败");
+      ctx.body = responses.fail(error.stack);
     }
   }
 });
