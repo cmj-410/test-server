@@ -2,6 +2,7 @@ const router = require("koa-router")();
 
 const constants = require("../constants/index");
 const responses = require("../utils/responses");
+const utils = require("../utils/index");
 
 const Article = require("../models/articleSchema");
 const Counter = require("../models/counterSchema");
@@ -79,21 +80,52 @@ router.get("/getAll-article-type", async (ctx) => {
   }
 });
 
-// 获取某类型的文章列表（一次三个,先这么干，count为请求的次数）
+// 获取某类型的文章列表
+// 获取方式 文章类型（默认），作者，文章id，某日期筛选
 router.get("/type-article-list", async (ctx) => {
-  const { type, count } = ctx.request.query;
-  if (!type || !count) {
+  const { type, userName, articleId, updateTimeAfter, updateTimeBefore } =
+    ctx.request.query;
+  const { page, skipIndex } = utils.pager(ctx.request.query);
+  if (!type || !page) {
     ctx.body = responses.fail("参数类型错误", constants.PARAM_ERROR);
   } else {
     try {
-      const query = Article.find(
-        { articleAbstractItem: type },
-        { _id: 0, __v: 0 }
+      // 1. 是否用户id查询（只用ID）
+      // 2. 是否有作者
+      // 3. 是否存在日期查询（3.1 是否存在起始日期；3.2 是否存在结束日期）
+      let params = { articleAbstractItem: type };
+      if (articleId) {
+        params.articleId = articleId;
+      } else {
+        // 2.
+        if (userName) {
+          params = {
+            userName,
+          };
+        }
+        // 3.
+        if (updateTimeAfter) {
+          params.lastUpdateTime = { $gte: updateTimeAfter };
+        }
+        if (updateTimeBefore) {
+          params.lastUpdateTime = { $lte: updateTimeBefore };
+        }
+      }
+      const query = Article.find(params, { _id: 0, __v: 0 });
+      const list = await query.skip(skipIndex).limit(page.pageSize);
+      const total = await Article.countDocuments(params);
+      ctx.body = responses.success(
+        {
+          page: {
+            ...page,
+            total,
+          },
+          list,
+        },
+        "获取" + type + "类型文章成功"
       );
-      const list = await query.skip(count * 3).limit(3);
-      ctx.body = responses.success(list);
     } catch (err) {
-      ctx.body = responses.fail(error.stack);
+      ctx.body = responses.fail(err.stack);
     }
   }
 });
